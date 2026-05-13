@@ -1,7 +1,7 @@
-import anthropic
 import asyncio
 import json
 import os
+import subprocess
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
@@ -11,18 +11,19 @@ from src.tools import load_cv, load_agent, parse_json_response, check_sponsorshi
 from src.scraper import scrape_page
 
 load_dotenv()
-client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 
 def call_claude(system: str, user: str, max_tokens: int = 2000) -> str:
-    """Call Claude API with AgentX agent as system prompt."""
-    message = client.messages.create(
-        model="claude-opus-4-5",
-        max_tokens=max_tokens,
-        system=system,
-        messages=[{"role": "user", "content": user}]
+    prompt = f"{system}\n\n{user}"
+    result = subprocess.run(
+        ["claude", "-p", prompt],
+        capture_output=True,
+        text=True,
+        timeout=60
     )
-    return message.content[0].text
+    if result.returncode != 0:
+        raise Exception(f"Claude Code error: {result.stderr}")
+    return result.stdout.strip()
 
 
 # --- AGENT 1: EXTRACTOR ---

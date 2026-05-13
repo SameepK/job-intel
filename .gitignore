@@ -13,3 +13,4 @@ memories/
 src/__pycache__/
 tests/__pycache__/
 src/data/
+cv.md
