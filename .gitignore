@@ -1,0 +1,15 @@
+.env
+venv/
+__pycache__/
+*.pyc
+*.pyo
+data/
+output/
+*.db
+.vscode/
+node_modules/
+extension/dist/
+memories/
+src/__pycache__/
+tests/__pycache__/
+src/data/

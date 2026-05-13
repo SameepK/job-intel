@@ -1,0 +1,57 @@
+{
+  "product-manager": {
+    "status": "idle",
+    "issue": null,
+    "lastActivity": null
+  },
+  "ux-designer": {
+    "status": "idle",
+    "issue": null,
+    "lastActivity": null
+  },
+  "architect": {
+    "status": "idle",
+    "issue": null,
+    "lastActivity": null
+  },
+  "engineer": {
+    "status": "idle",
+    "issue": null,
+    "lastActivity": null
+  },
+  "reviewer": {
+    "status": "idle",
+    "issue": null,
+    "lastActivity": null
+  },
+  "devops-engineer": {
+    "status": "idle",
+    "issue": null,
+    "lastActivity": null
+  },
+  "auto-fix-reviewer": {
+    "status": "idle",
+    "issue": null,
+    "lastActivity": null
+  },
+  "data-scientist": {
+    "status": "idle",
+    "issue": null,
+    "lastActivity": null
+  },
+  "tester": {
+    "status": "idle",
+    "issue": null,
+    "lastActivity": null
+  },
+  "consulting-research": {
+    "status": "idle",
+    "issue": null,
+    "lastActivity": null
+  },
+  "powerbi-analyst": {
+    "status": "idle",
+    "issue": null,
+    "lastActivity": null
+  }
+}

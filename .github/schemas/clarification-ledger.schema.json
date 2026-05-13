@@ -1,0 +1,170 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AgentX Clarification Ledger",
+  "description": "Schema for per-issue clarification ledgers stored under .agentx/state/clarifications/issue-{n}.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "issueNumber",
+    "clarifications"
+  ],
+  "properties": {
+    "issueNumber": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Issue number that owns this clarification ledger. Use 0 for general context without a linked issue."
+    },
+    "clarifications": {
+      "type": "array",
+      "description": "Clarification records for this issue.",
+      "items": {
+        "$ref": "#/definitions/clarificationRecord"
+      }
+    }
+  },
+  "definitions": {
+    "isoTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp."
+    },
+    "agentName": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "Lowercase agent identifier such as engineer or product-manager."
+    },
+    "threadEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "round",
+        "from",
+        "type",
+        "body",
+        "timestamp"
+      ],
+      "properties": {
+        "round": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Clarification round number for this entry."
+        },
+        "from": {
+          "$ref": "#/definitions/agentName"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "question",
+            "answer",
+            "resolution",
+            "escalation"
+          ],
+          "description": "Thread entry type."
+        },
+        "body": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Thread entry content."
+        },
+        "timestamp": {
+          "$ref": "#/definitions/isoTimestamp"
+        }
+      }
+    },
+    "clarificationRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "from",
+        "to",
+        "topic",
+        "blocking",
+        "status",
+        "round",
+        "maxRounds",
+        "created",
+        "staleAfter",
+        "resolvedAt",
+        "thread"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^CLR-[0-9]+-[0-9]{3}$",
+          "description": "Clarification identifier in CLR-{issue}-{seq:03d} format."
+        },
+        "from": {
+          "$ref": "#/definitions/agentName"
+        },
+        "to": {
+          "$ref": "#/definitions/agentName"
+        },
+        "topic": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Short clarification subject."
+        },
+        "blocking": {
+          "type": "boolean",
+          "description": "Whether the requesting agent is blocked until the clarification is resolved."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "answered",
+            "resolved",
+            "stale",
+            "escalated",
+            "abandoned"
+          ],
+          "description": "Clarification lifecycle status."
+        },
+        "round": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Current clarification round."
+        },
+        "maxRounds": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum rounds allowed before escalation."
+        },
+        "created": {
+          "$ref": "#/definitions/isoTimestamp"
+        },
+        "staleAfter": {
+          "$ref": "#/definitions/isoTimestamp"
+        },
+        "resolvedAt": {
+          "description": "Resolution timestamp or null while unresolved.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/isoTimestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "thread": {
+          "type": "array",
+          "description": "Typed clarification thread entries.",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/threadEntry"
+          }
+        },
+        "recordType": {
+          "type": "string",
+          "enum": ["clarification", "brainstorm"],
+          "default": "clarification",
+          "description": "Distinguishes clarification exchanges from brainstorm sessions."
+        }
+      }
+    }
+  }
+}

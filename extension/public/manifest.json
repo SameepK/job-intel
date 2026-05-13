@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "Job Intel — AgentX Tracker",
+  "version": "1.0.0",
+  "description": "Track job applications instantly using AgentX AI agents. One click to extract, analyse, and save any job posting.",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://localhost:8000/*",
+    "https://boards.greenhouse.io/*",
+    "https://jobs.ashbyhq.com/*",
+    "https://jobs.lever.co/*",
+    "https://www.linkedin.com/*",
+    "https://indeed.com/*",
+    "https://wellfound.com/*",
+    "https://*.greenhouse.io/*",
+    "https://*.lever.co/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://boards.greenhouse.io/*",
+        "https://jobs.ashbyhq.com/*",
+        "https://jobs.lever.co/*",
+        "https://www.linkedin.com/jobs/*",
+        "https://indeed.com/*",
+        "https://wellfound.com/*",
+        "https://*.greenhouse.io/*",
+        "https://*.lever.co/*"
+      ],
+      "js": ["content.js"]
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}

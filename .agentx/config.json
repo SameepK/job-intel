@@ -1,0 +1,17 @@
+{
+  "provider": "github",
+  "integration": "github",
+  "mode": "github",
+  "enforceIssues": false,
+  "nextIssueNumber": 1,
+  "created": "2026-05-13T01:29:09.806Z",
+  "updatedAt": "2026-05-13T01:44:11.609Z",
+  "repo": "SameepK/job-intel",
+  "project": null,
+  "adapters": {
+    "github": {
+      "repo": "SameepK/job-intel",
+      "project": null
+    }
+  }
+}
