@@ -23,7 +23,6 @@
       align-items: center;
       gap: 10px;
     }
-
     .header h1 { font-size: 16px; font-weight: 600; color: #fff; }
     .header span { font-size: 11px; color: #666; margin-left: auto; }
 
@@ -50,7 +49,6 @@
       cursor: pointer;
       transition: background 0.2s;
     }
-
     .track-btn:hover { background: #6d28d9; }
     .track-btn:disabled { background: #333; color: #666; cursor: not-allowed; }
 
@@ -62,7 +60,6 @@
       border: 1px solid #2a2a2a;
       display: none;
     }
-
     .status-box.visible { display: block; }
 
     .status-row {
@@ -71,18 +68,11 @@
       align-items: center;
       margin-bottom: 8px;
     }
-
     .status-row:last-child { margin-bottom: 0; }
     .label { font-size: 12px; color: #888; }
     .value { font-size: 13px; font-weight: 500; color: #fff; }
 
-    .pill {
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 600;
-    }
-
+    .pill { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
     .pill.apply { background: #065f46; color: #34d399; }
     .pill.skip { background: #7f1d1d; color: #f87171; }
     .pill.cautious { background: #78350f; color: #fbbf24; }
@@ -90,21 +80,8 @@
     .pill.unlikely { background: #7f1d1d; color: #f87171; }
     .pill.unknown { background: #1e3a5f; color: #60a5fa; }
 
-    .score-bar {
-      width: 100%;
-      height: 6px;
-      background: #2a2a2a;
-      border-radius: 3px;
-      margin-top: 4px;
-      overflow: hidden;
-    }
-
-    .score-fill {
-      height: 100%;
-      background: #7c3aed;
-      border-radius: 3px;
-      transition: width 0.5s ease;
-    }
+    .score-bar { width: 100%; height: 6px; background: #2a2a2a; border-radius: 3px; margin-top: 4px; overflow: hidden; }
+    .score-fill { height: 100%; background: #7c3aed; border-radius: 3px; transition: width 0.5s ease; }
 
     .divider { height: 1px; background: #2a2a2a; margin: 12px 0; }
 
@@ -118,7 +95,6 @@
       color: #f87171;
       display: none;
     }
-
     .error-box.visible { display: block; }
 
     .loading {
@@ -129,7 +105,6 @@
       color: #888;
       display: none;
     }
-
     .loading.visible { display: flex; }
 
     .spinner {
@@ -141,7 +116,6 @@
       animation: spin 0.8s linear infinite;
       flex-shrink: 0;
     }
-
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .step { font-size: 11px; color: #666; margin-top: 4px; }
@@ -158,12 +132,65 @@
       cursor: pointer;
       transition: all 0.2s;
     }
-
     .view-all:hover { border-color: #7c3aed; color: #fff; }
   </style>
 </head>
 <body>
-  <div id="root"></div>
+  <div class="header">
+    <h1>Job Intel</h1>
+    <span class="badge">AgentX</span>
+    <span id="page-host"></span>
+  </div>
+  <div class="main">
+    <button class="track-btn" id="track-btn">Track This Job</button>
+
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <div>
+        <div>Analysing job posting...</div>
+        <div class="step" id="loading-step"></div>
+      </div>
+    </div>
+
+    <div class="error-box" id="error-box"></div>
+
+    <div class="status-box" id="status-box">
+      <div class="status-row">
+        <span class="label">Title</span>
+        <span class="value" id="result-title">-</span>
+      </div>
+      <div class="divider"></div>
+      <div class="status-row">
+        <span class="label">Company</span>
+        <span class="value" id="result-company">-</span>
+      </div>
+      <div class="divider"></div>
+      <div class="status-row">
+        <span class="label">Fit Score</span>
+        <div>
+          <span class="value" id="result-score">-</span>
+          <div class="score-bar"><div class="score-fill" id="score-fill" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="status-row">
+        <span class="label">Visa Risk</span>
+        <span class="value" id="result-visa">-</span>
+      </div>
+      <div class="divider"></div>
+      <div class="status-row">
+        <span class="label">Sponsorship</span>
+        <span class="pill unknown" id="result-sponsorship">-</span>
+      </div>
+      <div class="divider"></div>
+      <div class="status-row">
+        <span class="label">Recommendation</span>
+        <span class="pill cautious" id="result-recommendation">-</span>
+      </div>
+    </div>
+
+    <button class="view-all" id="view-all">View My Applications</button>
+  </div>
   <script src="popup.js"></script>
 </body>
 </html>
