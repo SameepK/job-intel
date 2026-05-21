@@ -24,8 +24,8 @@ function showResult(data: any) {
 
   if (!app) return;
 
-  $("result-title").textContent = app.title || "—";
-  $("result-company").textContent = app.company || "—";
+  $("result-title").textContent = app.title || "\u2014";
+  $("result-company").textContent = app.company || "\u2014";
 
   if (analysis) {
     const score = analysis.fit_score || 0;
@@ -33,7 +33,7 @@ function showResult(data: any) {
     ($("score-fill") as HTMLElement).style.width = `${score * 10}%`;
 
     const visaEl = $("result-visa");
-    visaEl.textContent = analysis.visa_risk || "—";
+    visaEl.textContent = analysis.visa_risk || "\u2014";
     visaEl.style.color =
       analysis.visa_risk === "high" ? "#f87171" :
       analysis.visa_risk === "low" ? "#34d399" : "#fbbf24";
@@ -66,7 +66,6 @@ async function extractAndTrack() {
 
   try {
     const tab = await getCurrentTab();
-
     if (!tab.id || !tab.url) {
       showError("Cannot access this page.");
       showLoading(false);
@@ -78,9 +77,7 @@ async function extractAndTrack() {
       $("page-host").textContent = url.hostname;
     } catch (_) {}
 
-    const pageData: any = await chrome.tabs.sendMessage(tab.id, {
-      type: "EXTRACT_PAGE"
-    });
+    const pageData: any = await chrome.tabs.sendMessage(tab.id, { type: "EXTRACT_PAGE" });
 
     if (!pageData || !pageData.text) {
       showError("Could not extract page content. Make sure you are on a job posting page.");
@@ -107,7 +104,6 @@ async function extractAndTrack() {
     }
 
     showResult(result);
-
   } catch (err: any) {
     showError(err.message || "Something went wrong. Is the backend running?");
   } finally {
@@ -119,7 +115,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   $("track-btn").addEventListener("click", extractAndTrack);
 
   $("view-all").addEventListener("click", () => {
-    chrome.tabs.create({ url: "http://localhost:8000/applications" });
+    chrome.tabs.create({ url: chrome.runtime.getURL("apps.html") });
   });
 
   try {
