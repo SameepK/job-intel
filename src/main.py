@@ -1,13 +1,34 @@
 import os
 import asyncio
+from pathlib import Path
+
+from typing import Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from src.database import init_db, get_all_applications, get_application, update_status, get_due_reminders
-from src.models import ExtractRequest, StatusUpdateRequest
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
+from src.database import (
+    init_db,
+    get_all_applications,
+    get_application,
+    update_status,
+    get_due_reminders,
+    get_notes,
+    save_note,
+    update_note,
+    delete_note,
+    get_note_by_id,
+    get_export_data,
+)
+from src.models import ExtractRequest, StatusUpdateRequest, NoteCreate, NoteUpdate
 from src.pipeline import run_pipeline
 
 app = FastAPI(title="Job Intel — AgentX Powered", version="1.0.0")
+
+dashboard_dist = Path(__file__).resolve().parent.parent / "dashboard" / "dist"
+if dashboard_dist.exists():
+    app.mount("/dashboard", StaticFiles(directory=str(dashboard_dist), html=True), name="dashboard")
 
 app.add_middleware(
     CORSMiddleware,
@@ -62,9 +83,25 @@ async def track_url(body: dict):
 
 
 @app.get("/applications")
-def list_applications():
-    """Get all tracked applications."""
-    return get_all_applications()
+def list_applications(
+    status: Optional[str] = None,
+    company: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    visa_risk: Optional[str] = None,
+    fit_score_min: Optional[int] = None,
+    fit_score_max: Optional[int] = None,
+):
+    """Get all tracked applications with optional filtering."""
+    return get_all_applications(status=status, company=company, date_from=date_from,
+                                date_to=date_to, visa_risk=visa_risk,
+                                fit_score_min=fit_score_min, fit_score_max=fit_score_max)
+
+
+@app.get("/applications/view")
+def applications_view():
+    """Redirect to the dashboard UI for applications."""
+    return RedirectResponse(url="/dashboard/")
 
 
 @app.get("/applications/{application_id}")
@@ -82,10 +119,55 @@ def update_application_status(application_id: str, request: StatusUpdateRequest)
     valid = ["applied", "phone_screen", "interview", "offer", "accepted", "rejected", "ghosted"]
     if request.new_status not in valid:
         raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid}")
-    success = update_status(application_id, request.new_status)
-    if not success:
+    result = update_status(application_id, request.new_status, request.timestamp)
+    if not result:
         raise HTTPException(status_code=400, detail="Could not update — invalid transition or ID not found")
-    return {"success": True, "new_status": request.new_status}
+    return {"success": True, "application_id": application_id, **result}
+
+
+@app.get("/applications/{application_id}/notes")
+def list_application_notes(application_id: str):
+    app_data = get_application(application_id)
+    if not app_data:
+        raise HTTPException(status_code=404, detail="Application not found")
+    return get_notes(application_id)
+
+
+@app.post("/applications/{application_id}/notes")
+def create_application_note(application_id: str, note: NoteCreate):
+    app_data = get_application(application_id)
+    if not app_data:
+        raise HTTPException(status_code=404, detail="Application not found")
+    note_id = save_note(application_id, note.text)
+    created = get_note_by_id(note_id)
+    return created
+
+
+@app.patch("/applications/{application_id}/notes/{note_id}")
+def edit_application_note(application_id: str, note_id: str, note: NoteUpdate):
+    app_data = get_application(application_id)
+    if not app_data:
+        raise HTTPException(status_code=404, detail="Application not found")
+    updated = update_note(note_id, note.text)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Note not found")
+    return get_note_by_id(note_id)
+
+
+@app.delete("/applications/{application_id}/notes/{note_id}")
+def delete_application_note(application_id: str, note_id: str):
+    app_data = get_application(application_id)
+    if not app_data:
+        raise HTTPException(status_code=404, detail="Application not found")
+    deleted = delete_note(note_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Note not found")
+    return {"success": True, "note_id": note_id}
+
+
+@app.get("/export")
+def export_data():
+    return get_export_data()
 
 
 @app.get("/reminders")

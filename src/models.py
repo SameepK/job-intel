@@ -62,6 +62,25 @@ class ExtractRequest(BaseModel):
     page_title: Optional[str] = None
 
 
-class StatusUpdateRequest(BaseModel):
+class NoteBase(BaseModel):
+    text: str
+
+
+class NoteCreate(NoteBase):
+    pass
+
+
+class NoteUpdate(NoteBase):
+    pass
+
+
+class NoteResponse(NoteBase):
+    id: str
     application_id: str
+    created_at: str
+    updated_at: str
+
+
+class StatusUpdateRequest(BaseModel):
     new_status: str
+    timestamp: Optional[str] = None

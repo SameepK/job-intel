@@ -1,12 +1,8 @@
 ---
 name: "Code Review"
 agent: "AgentX Reviewer"
-description: Structured code review prompt for thorough PR reviews
-inputs:
- issue_number:
- description: "Issue or pull request number to review"
- required: true
- default: ""
+description: "Structured code review prompt for thorough PR reviews"
+argument-hint: "issue_number"
 ---
 
 # Code Review Prompt

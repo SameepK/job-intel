@@ -163,60 +163,7 @@
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>Job Intel</h1>
-    <span class="badge">AgentX</span>
-    <span id="page-host"></span>
-  </div>
-
-  <div class="main">
-    <button class="track-btn" id="track-btn">Track This Job</button>
-
-    <div class="loading" id="loading">
-      <div class="spinner"></div>
-      <div>
-        <div id="loading-text">Running AgentX pipeline...</div>
-        <div class="step">Extractor → Analyst → Tracker → Reviewer</div>
-      </div>
-    </div>
-
-    <div class="status-box" id="status-box">
-      <div class="status-row">
-        <span class="label">Role</span>
-        <span class="value" id="result-title">—</span>
-      </div>
-      <div class="status-row">
-        <span class="label">Company</span>
-        <span class="value" id="result-company">—</span>
-      </div>
-      <div class="divider"></div>
-      <div class="status-row">
-        <span class="label">Fit Score</span>
-        <span class="value" id="result-score">—</span>
-      </div>
-      <div class="score-bar">
-        <div class="score-fill" id="score-fill" style="width: 0%"></div>
-      </div>
-      <div class="divider"></div>
-      <div class="status-row">
-        <span class="label">Sponsorship</span>
-        <span class="pill" id="result-sponsorship">—</span>
-      </div>
-      <div class="status-row">
-        <span class="label">Visa Risk</span>
-        <span class="value" id="result-visa">—</span>
-      </div>
-      <div class="status-row">
-        <span class="label">Recommendation</span>
-        <span class="pill" id="result-recommendation">—</span>
-      </div>
-    </div>
-
-    <div class="error-box" id="error-box"></div>
-
-    <button class="view-all" id="view-all">View All Applications</button>
-  </div>
-
+  <div id="root"></div>
   <script src="popup.js"></script>
 </body>
 </html>
