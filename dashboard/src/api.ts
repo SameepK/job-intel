@@ -38,6 +38,16 @@ export async function createNote(applicationId: string, text: string) {
   return response.json();
 }
 
+export async function updateNote(applicationId: string, noteId: string, text: string) {
+  const response = await fetch(`${API_BASE}/applications/${applicationId}/notes/${noteId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text })
+  });
+  if (!response.ok) throw new Error('Unable to update note');
+  return response.json();
+}
+
 export async function deleteNote(applicationId: string, noteId: string) {
   const response = await fetch(`${API_BASE}/applications/${applicationId}/notes/${noteId}`, {
     method: 'DELETE'
