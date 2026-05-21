@@ -1,20 +1,38 @@
-function $(id: string) {
-  return document.getElementById(id) as HTMLElement;
+// Safe element accessor - returns null if not found instead of crashing
+function $(id: string): HTMLElement | null {
+  return document.getElementById(id);
+}
+
+function setText(id: string, value: string) {
+  const el = $(id);
+  if (el) el.textContent = value;
+}
+
+function setClass(id: string, className: string) {
+  const el = $(id);
+  if (el) el.className = className;
+}
+
+function setStyle(id: string, prop: string, value: string) {
+  const el = $(id) as HTMLElement | null;
+  if (el) el.style.setProperty(prop, value);
 }
 
 function showLoading(show: boolean) {
-  $("loading").classList.toggle("visible", show);
-  ($("track-btn") as HTMLButtonElement).disabled = show;
+  $("loading")?.classList.toggle("visible", show);
+  const btn = $("track-btn") as HTMLButtonElement | null;
+  if (btn) btn.disabled = show;
 }
 
 function showError(message: string) {
   const box = $("error-box");
+  if (!box) return;
   box.textContent = message;
   box.classList.add("visible");
 }
 
 function hideError() {
-  $("error-box").classList.remove("visible");
+  $("error-box")?.classList.remove("visible");
 }
 
 function showResult(data: any) {
@@ -24,34 +42,40 @@ function showResult(data: any) {
 
   if (!app) return;
 
-  $("result-title").textContent = app.title || "\u2014";
-  $("result-company").textContent = app.company || "\u2014";
+  setText("result-title", app.title || "\u2014");
+  setText("result-company", app.company || "\u2014");
 
   if (analysis) {
     const score = analysis.fit_score || 0;
-    $("result-score").textContent = `${score}/10`;
-    ($("score-fill") as HTMLElement).style.width = `${score * 10}%`;
+    setText("result-score", `${score}/10`);
+    setStyle("score-fill", "width", `${score * 10}%`);
 
     const visaEl = $("result-visa");
-    visaEl.textContent = analysis.visa_risk || "\u2014";
-    visaEl.style.color =
-      analysis.visa_risk === "high" ? "#f87171" :
-      analysis.visa_risk === "low" ? "#34d399" : "#fbbf24";
+    if (visaEl) {
+      visaEl.textContent = analysis.visa_risk || "\u2014";
+      visaEl.style.color =
+        analysis.visa_risk === "high" ? "#f87171" :
+        analysis.visa_risk === "low"  ? "#34d399" : "#fbbf24";
+    }
   }
 
   const sponsorEl = $("result-sponsorship");
-  const signal = app.sponsorship_signal || "unknown";
-  sponsorEl.textContent = signal;
-  sponsorEl.className = `pill ${signal}`;
+  if (sponsorEl) {
+    const signal = app.sponsorship_signal || "unknown";
+    sponsorEl.textContent = signal;
+    sponsorEl.className = `pill ${signal}`;
+  }
 
   if (review) {
     const recEl = $("result-recommendation");
-    const rec = review.final_recommendation || "cautious";
-    recEl.textContent = rec;
-    recEl.className = `pill ${rec}`;
+    if (recEl) {
+      const rec = review.final_recommendation || "cautious";
+      recEl.textContent = rec;
+      recEl.className = `pill ${rec}`;
+    }
   }
 
-  $("status-box").classList.add("visible");
+  $("status-box")?.classList.add("visible");
 }
 
 async function getCurrentTab() {
@@ -71,7 +95,7 @@ async function extractPageData(tabId: number): Promise<any> {
     const result = await chrome.tabs.sendMessage(tabId, { type: "EXTRACT_PAGE" });
     if (result && result.text) return result;
   } catch (_) {
-    // Content script not yet injected — fall through to on-demand injection
+    // Content script not yet injected - fall through to on-demand injection
   }
 
   // Attempt 2: inject content script on-demand via scripting API
@@ -91,7 +115,7 @@ async function extractPageData(tabId: number): Promise<any> {
 async function extractAndTrack() {
   hideError();
   showLoading(true);
-  $("status-box").classList.remove("visible");
+  $("status-box")?.classList.remove("visible");
 
   try {
     const tab = await getCurrentTab();
@@ -102,7 +126,11 @@ async function extractAndTrack() {
     }
 
     // Block extension pages, new-tab, etc.
-    if (tab.url.startsWith("chrome://") || tab.url.startsWith("chrome-extension://") || tab.url.startsWith("about:")) {
+    if (
+      tab.url.startsWith("chrome://") ||
+      tab.url.startsWith("chrome-extension://") ||
+      tab.url.startsWith("about:")
+    ) {
       showError("Navigate to a job posting page first, then click Track.");
       showLoading(false);
       return;
@@ -110,7 +138,8 @@ async function extractAndTrack() {
 
     try {
       const url = new URL(tab.url);
-      $("page-host").textContent = url.hostname;
+      const hostEl = $("page-host");
+      if (hostEl) hostEl.textContent = url.hostname;
     } catch (_) {}
 
     let pageData: any;
@@ -155,9 +184,9 @@ async function extractAndTrack() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  $("track-btn").addEventListener("click", extractAndTrack);
+  $("track-btn")?.addEventListener("click", extractAndTrack);
 
-  $("view-all").addEventListener("click", () => {
+  $("view-all")?.addEventListener("click", () => {
     chrome.tabs.create({ url: chrome.runtime.getURL("apps.html") });
   });
 
@@ -165,7 +194,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const tab = await getCurrentTab();
     if (tab.url) {
       const url = new URL(tab.url);
-      $("page-host").textContent = url.hostname;
+      const hostEl = $("page-host");
+      if (hostEl) hostEl.textContent = url.hostname;
     }
   } catch (_) {}
 });
