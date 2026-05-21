@@ -59,6 +59,35 @@ async function getCurrentTab() {
   return tab;
 }
 
+/**
+ * Extract page data from the active tab.
+ * First tries sendMessage to the already-injected content script.
+ * If the content script isn't loaded ("Receiving end does not exist"),
+ * falls back to chrome.scripting.executeScript to inject on-demand.
+ */
+async function extractPageData(tabId: number): Promise<any> {
+  // Attempt 1: message the content script if already injected
+  try {
+    const result = await chrome.tabs.sendMessage(tabId, { type: "EXTRACT_PAGE" });
+    if (result && result.text) return result;
+  } catch (_) {
+    // Content script not yet injected — fall through to on-demand injection
+  }
+
+  // Attempt 2: inject content script on-demand via scripting API
+  await chrome.scripting.executeScript({
+    target: { tabId },
+    files: ["content.js"]
+  });
+
+  // Small delay to let the script initialise
+  await new Promise(resolve => setTimeout(resolve, 300));
+
+  // Retry the message
+  const result = await chrome.tabs.sendMessage(tabId, { type: "EXTRACT_PAGE" });
+  return result;
+}
+
 async function extractAndTrack() {
   hideError();
   showLoading(true);
@@ -72,15 +101,29 @@ async function extractAndTrack() {
       return;
     }
 
+    // Block extension pages, new-tab, etc.
+    if (tab.url.startsWith("chrome://") || tab.url.startsWith("chrome-extension://") || tab.url.startsWith("about:")) {
+      showError("Navigate to a job posting page first, then click Track.");
+      showLoading(false);
+      return;
+    }
+
     try {
       const url = new URL(tab.url);
       $("page-host").textContent = url.hostname;
     } catch (_) {}
 
-    const pageData: any = await chrome.tabs.sendMessage(tab.id, { type: "EXTRACT_PAGE" });
+    let pageData: any;
+    try {
+      pageData = await extractPageData(tab.id);
+    } catch (err: any) {
+      showError("Could not read the page. Try refreshing the job posting and clicking Track again.");
+      showLoading(false);
+      return;
+    }
 
     if (!pageData || !pageData.text) {
-      showError("Could not extract page content. Make sure you are on a job posting page.");
+      showError("Page content looks empty. Make sure you are on a job posting page.");
       showLoading(false);
       return;
     }
