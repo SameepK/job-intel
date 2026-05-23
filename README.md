@@ -26,7 +26,7 @@ Job seekers on OPT must manage dozens of applications while avoiding roles that 
 | Web scraping | Playwright, BeautifulSoup |
 | AI / NLP | Anthropic Claude via `anthropic` SDK |
 | Data validation | Pydantic |
-| Agent prompts | `.github/agents/*.agent.md` |
+| Agent prompts | `.github/agents/*.agent.md` |2wq2`q
 | Browser extension | Chrome extension in `extension/` |
 
 ## Architecture

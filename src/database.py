@@ -403,6 +403,15 @@ def get_application(application_id: str) -> Optional[dict]:
         conn.close()
         return None
     result = dict(row)
+    for field in ("skill_gaps", "strengths"):
+        val = result.get(field)
+        if isinstance(val, str):
+            try:
+                result[field] = json.loads(val)
+            except (json.JSONDecodeError, ValueError):
+                result[field] = []
+        elif val is None:
+            result[field] = []
     result["notes"] = get_notes(application_id)
     result["status_history"] = get_status_history(application_id)
     follow_up = compute_follow_up_state(result.get("applied_date"), result.get("status", ""))
