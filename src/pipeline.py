@@ -16,13 +16,16 @@ load_dotenv()
 def call_claude(system: str, user: str, max_tokens: int = 2000) -> str:
     prompt = f"{system}\n\n{user}"
     result = subprocess.run(
-        ["claude", "-p", prompt],
+        ["claude"],
+        input=prompt,
         capture_output=True,
         text=True,
         timeout=60
     )
     if result.returncode != 0:
-        raise Exception(f"Claude Code error: {result.stderr}")
+        print(f"[call_claude] stderr: {result.stderr}")
+        print(f"[call_claude] stdout: {result.stdout}")
+        raise Exception(f"Claude Code error (rc={result.returncode}): {result.stderr}")
     return result.stdout.strip()
 
 
