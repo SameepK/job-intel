@@ -3,16 +3,18 @@ Epic: #1
 Title: Job Intel — OPT Student Job Application Tracker
 Author: Product Manager Agent
 Date: 2026-05-19
+Updated: 2026-05-27
 Priority: p1
-Status: Draft
+Status: Active
 ---
 
 # PRD: Job Intel — OPT Student Job Application Tracker
 
 **Epic**: #1
-**Status**: Draft
+**Status**: Active
 **Author**: Product Manager Agent
 **Date**: 2026-05-19
+**Last Updated**: 2026-05-27
 **Stakeholders**: Founder / Engineer (Sameep), Student users (OPT), Reviewer agent
 **Priority**: p1
 
@@ -123,10 +125,10 @@ Users will continue to waste time on unsuitable applications, miss timely follow
    - [ ] Each application object includes id, title, company, location, date_applied, status, status_history (array with timestamps), visa_risk, fit_score, notes (array), and raw_source_url.
    - [ ] Endpoint is local-only by default (no external auth) and documented in README.
 
-4. **Existing capabilities preserved**: The current one-click Chrome capture, 4-agent AgentX pipeline (extract, analyze, save, set reminders, generate brief), FastAPI backend, and existing tests must remain functional. (Sponsorship-detection/checking features have been removed per product decision.)
+4. **Existing capabilities preserved**: The current one-click Chrome capture, 4-agent AgentX pipeline (Extractor → Analyst → Tracker → Reviewer) plus a Prep Brief Generator step, FastAPI backend, and existing tests must remain functional. Sponsorship signal detection (`sponsorship_signal`) is active: the pipeline captures it from page text and the Reviewer enforces a hard block when `sponsorship_signal = "unlikely"` combined with `visa_risk = "high"` (OPT safety rule).
  - User Story: As a developer, I want the AgentX pipeline to continue feeding extracted job data into the Tracker so the system remains end-to-end functional.
  - Acceptance Criteria:
-   - [ ] Existing 7 FastAPI endpoints still respond to current tests.
+   - [ ] All 14 FastAPI endpoints still respond to current tests.
    - [ ] All current tests continue to pass after changes.
    - [ ] New tracker features integrate cleanly with AgentX extraction (no breaking changes to data model).
 
@@ -142,14 +144,14 @@ Users will continue to waste time on unsuitable applications, miss timely follow
 - Technology Classification: Hybrid — AgentX multi-agent pipeline with rule-based checks and scoring using resume matching (embedding or heuristics).
 
 Product-Facing AI Contract:
-- Primary AI Job: Extract structured job fields from a job page, score fit against user's CV, produce a `visa_risk` signal derived from explicit job requirement fields (Analyst agent), and generate an interview prep brief. The system will NOT perform sponsorship-detection or hard-blocking based on sponsorship.
+- Primary AI Job: Extract structured job fields from a job page (including `sponsorship_signal` detected from page text), score fit against user's CV, produce a `visa_risk` signal (Analyst agent), enforce OPT safety rules (hard block when `sponsorship_signal = "unlikely"` + `visa_risk = "high"`), and generate an interview prep brief.
 - Grounding Sources: job page content (scraped), user's `cv.md`, internal heuristics and past analyses in `data/`.
 - Tool Boundaries: AgentX pipeline may read job pages, write to the app DB, and generate briefs; it must NOT auto-apply or share PII externally.
 - Response Contract: Structured JSON for job records (title, company, location, salary, visa_risk), plus markdown interview briefs.
 - Fallback Behavior: If extraction confidence is low, mark record `needs_review=true` and notify user to confirm fields.
 
 AI Acceptance Criteria:
-- [ ] Extraction confidence threshold set (e.g., 75%); below that `needs_review` flagged.
+- [ ] Extraction confidence threshold and `needs_review` flag — **not yet implemented**; flagged for future work.
 - [ ] Generated briefs include sections: Role summary, Key skills, Sample questions, Suggested examples from CV.
 
 ### 4.3 Non-Functional Requirements
@@ -207,7 +209,7 @@ AI Acceptance Criteria:
 **Preconditions**: At least one application has been saved.
 
 Steps:
-1. User opens extension or navigates to dashboard (localhost:3000).
+1. User opens extension or navigates to dashboard (http://localhost:8000/dashboard).
 2. Tracker list view displays all saved applications with title, company, date applied, status, visa_risk, fit_score.
 3. User can:
    - See follow-ups due today (highlighted or in separate section based on 7/14/21 schedule).
@@ -229,9 +231,10 @@ Steps:
 1. User clicks extension Save button.
 2. AgentX pipeline scrapes and extracts job fields (title, company, location, job description, requirements).
 3. Analyst agent scores fit against cv.md and produces visa_risk signal.
-4. Generator agent creates interview prep brief.
-5. Backend saves record to SQLite with status=applied, date_applied=today, timestamp.
-6. UI shows toast: "Saved — View in My Applications".
+4. Reviewer agent validates pipeline output and enforces OPT hard-block rules.
+5. Prep Brief Generator (pipeline step after Reviewer) produces the interview prep brief.
+6. Backend saves record to SQLite with status=applied, date_applied=today, timestamp.
+7. UI shows toast: "Saved — View in My Applications".
 7. Success: Application appears in Tracker with all extracted data, ready to be tracked.
 
 **Alternative Flows**:
@@ -280,7 +283,7 @@ Steps:
 
 | Risk | Impact | Probability | Mitigation | Owner |
 |---|---|---|---|---|
-| Sponsorship inference (removed) | Low | Low | Feature removed; no sponsorship inference is performed | PM/Engineer |
+| Sponsorship signal misclassification | Medium | Medium | `sponsorship_signal` is heuristic-based; Reviewer hard-blocks only when both `sponsorship_signal=unlikely` AND `visa_risk=high` to reduce false positives | Engineer |
 | Notifications blocked by browser | High | Medium | Provide dashboard fallback and in-extension reminders; notifications deferred to Phase 2 | Engineer |
 | Data loss in local DB | High | Low | `GET /export` endpoint + periodic export/backup option | Engineer |
 

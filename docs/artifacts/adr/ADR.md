@@ -2,13 +2,13 @@
 Epic: #1
 Title: ADR — Job Intel Tracker Architecture
 Date: 2026-05-20
-Status: Proposed
+Status: Active
 ---
 
 # ADR: Job Intel Job Application Tracker Architecture
 
 **Epic**: #1
-**Status**: Proposed
+**Status**: Active
 **Author**: Architect Agent
 **Date**: 2026-05-20
 **Affected Components**: React dashboard, Chrome extension, FastAPI backend, SQLite database
@@ -19,13 +19,13 @@ Status: Proposed
 
 ### Problem
 Job Intel requires four major architectural additions to fulfill the PRD:
-1. **React dashboard at localhost:3000** — Full-featured UI for job tracking, filtering, and status management outside the extension.
+1. **React dashboard served at localhost:8000/dashboard** — Full-featured UI for job tracking, filtering, and status management outside the extension. Built with Vite and served as a static app mounted on the FastAPI backend at `/dashboard`.
 2. **My Applications view in Chrome extension** — Tracker accessible directly from the browser without leaving the current tab.
 3. **Notes per application** — Free-text context attached to applications, synchronized between extension and dashboard.
 4. **Status history logging** — Track status transitions with timestamps as applications progress through lifecycle (applied → interview → offer → accepted/rejected).
 
 ### Current State
-- FastAPI backend (localhost:8000) with 7 endpoints; SQLite database with tables: `applications`, `analyses`, `reminders`, `status_history`.
+- FastAPI backend (localhost:8000) with 14 endpoints; SQLite database with tables: `applications`, `analyses`, `reminders`, `status_history`, `notes`.
 - TypeScript Chrome extension with background worker and popup.
 - AgentX 4-agent pipeline (extractor, analyst, tracker, reviewer) feeds extracted job data into the tracker.
 - Status field exists on applications; status_history table exists but may not be fully integrated into the save/update flow.
@@ -46,7 +46,7 @@ Job Intel requires four major architectural additions to fulfill the PRD:
 
 ### Option 1: Decoupled React App + HTTP API (RECOMMENDED)
 
-**Description**: React dashboard as a standalone Vite app at localhost:3000. Extension is a separate frontend that communicates with the same FastAPI backend via HTTP. Notes and status updates go through REST endpoints. No shared state except SQLite backend.
+**Description**: React dashboard built with Vite, compiled to `dashboard/dist/`, and served by FastAPI at `localhost:8000/dashboard`. Extension is a separate frontend that communicates with the same FastAPI backend via HTTP. Notes and status updates go through REST endpoints. No shared state except SQLite backend.
 
 **Pros**:
 - Clean separation of concerns: extension and dashboard are independent frontends.

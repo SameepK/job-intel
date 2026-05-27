@@ -19,7 +19,7 @@ Scope (MVP)
 - Notes: create, edit, delete
 - JSON export endpoint GET /export
 - AgentX pipeline compatibility after schema/endpoint changes
-- Verify existing automated tests still pass (7 tests currently)
+- Verify existing automated tests still pass (13 tests currently)
 
 Test Types
 - Unit tests: business logic, DB helpers, model validation (pytest)
@@ -31,7 +31,7 @@ General Test Environment & Commands
 - Start backend: python -m src.main (serves on localhost:8000)
 - Run unit/integration tests: pytest -q
 - Run only existing tests: pytest -q tests (or pytest -q and confirm 7 tests pass)
-- Manual E2E: open extension in Chrome (unpacked) and dashboard at http://localhost:3000 if running
+- Manual E2E: open extension in Chrome (unpacked) and dashboard at http://localhost:8000/dashboard
 
 Test Data Guidelines
 - Use deterministic UUIDs where possible in unit tests.
@@ -46,7 +46,7 @@ Acceptance Criteria (overall)
 - Filters applied in GET /applications return correct subsets and respect multiple filters combined.
 - Follow-up indicators (7/14/21) computed from applied_date and visible in UI flows.
 - AgentX pipeline can save new applications and analyses without schema errors.
-- Existing automated tests (7) pass unchanged.
+- Existing automated tests (13) pass unchanged.
 
 Test Matrix (feature -> test type)
 - Tracker list view: unit, integration, manual E2E
@@ -106,7 +106,7 @@ TC-04: Follow-Up Tracking (7/14/21 days)
  1. Call GET /applications.
  2. For each returned application compute days since applied_date.
 - Expected:
- - Applications exactly 7, 14, 21 days old are flagged accordingly in server-provided metadata or are computable by UI using applied_date.
+ - Applications >= 7 days old are flagged at "7 days"; >= 14 days at "14 days"; >= 21 days at "21 days". Logic uses threshold (>=), not exact match. Server returns `follow_up_due`, `follow_up_days`, and `follow_up_stage` fields on each application.
  - Acceptance: server returns applied_date and last_updated; UI component uses those to render follow-up highlights. For integration test, verify server includes dates; for UI test, verify highlight rendered.
 - Test type: Unit (date utility), Integration (API provides dates), Manual E2E (UI highlight)
 
@@ -149,13 +149,13 @@ TC-07: AgentX Pipeline Smoke Test (End-to-End)
  - No pipeline exception; API returns success.
 - Test type: Integration / Manual E2E
 
-TC-08: Regression - Existing 7 Tests Still Pass
+TC-08: Regression - Existing 13 Tests Still Pass
 - Objective: Ensure current test suite continues to pass after changes.
 - Steps:
  1. Run pytest -q against repository.
- 2. Confirm total tests includes previous 7 tests and they all pass.
+ 2. Confirm total tests includes all 13 tests and they all pass.
 - Expected:
- - All previously-existing tests (7) pass. Any failures must be triaged and filed as bugs.
+ - All previously-existing tests (13) pass. Any failures must be triaged and filed as bugs.
 - Test type: Regression (automatable)
 
 Test Implementation Notes
@@ -188,7 +188,7 @@ Appendix: Quick Run Commands
 - Start backend: python -m src.main
 - Run all Python tests: pytest -q
 - Run a single test file: pytest -q tests/test_pipeline.py
-- Manual: start dashboard with npm run dev:dashboard and build/load extension with npm run build:extension
+- Manual: build dashboard with npm run build:dashboard (served at http://localhost:8000/dashboard) and build/load extension with npm run build:extension
 
 ---
 

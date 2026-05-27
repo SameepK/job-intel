@@ -2,13 +2,13 @@
 Epic: #1
 Title: SPEC — Job Intel Tracker Implementation
 Date: 2026-05-20
-Status: Proposed
+Status: Active
 ---
 
 # Technical Specification: Job Intel Job Application Tracker
 
 **Epic**: #1
-**Status**: Proposed
+**Status**: Active
 **Author**: Architect Agent
 **Date**: 2026-05-20
 **Architecture Decision**: ADR.md (Option 1: Decoupled React + HTTP API)
@@ -25,7 +25,7 @@ This specification details the implementation of the Job Intel Job Application T
 - JSON export endpoint
 - Integration with existing AgentX pipeline
 - Chrome extension "My Applications" view
-- React dashboard at localhost:3000
+- React dashboard at localhost:8000/dashboard (built by Vite, served as static files by FastAPI)
 
 **Out of Scope for MVP**:
 - Real-time multi-client sync (WebSocket)
@@ -66,7 +66,7 @@ This specification details the implementation of the Job Intel Job Application T
 └──────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────┐
-│ React Dashboard (Vite) — localhost:3000             │
+│ React Dashboard (Vite) — localhost:8000/dashboard   │
 │  ├─ Tracker page (list, filter, status)             │
 │  ├─ Details page (notes, history, brief)            │
 │  └─ Settings page                                   │
@@ -95,8 +95,8 @@ CREATE TABLE applications (
     ats_type TEXT,
     status TEXT DEFAULT 'applied',  -- applied, phone_screen, interview, offer, accepted, rejected, ghosted
     applied_date TEXT,
-    last_updated TEXT,  -- ISO 8601 timestamp; update on every write
-    needs_review BOOLEAN DEFAULT 0  -- AgentX extraction confidence < 75%
+    last_updated TEXT  -- ISO 8601 timestamp; update on every write
+    -- NOTE: needs_review field is not yet implemented
 );
 ```
 
@@ -152,7 +152,9 @@ CREATE TABLE status_history (
     "visa_risk": "low",
     "fit_score": 85,
     "job_description": "...",
-    "needs_review": false
+    "follow_up_due": true,
+    "follow_up_days": 7,
+    "follow_up_stage": "7 days"
   }
 ]
 ```
@@ -479,7 +481,7 @@ def list_applications(status: Optional[str] = None, company: Optional[str] = Non
 
 ### 6.2 Schema Compatibility
 - Existing `applications` table columns: OK as-is.
-- Add `last_updated` and `needs_review` columns (non-breaking).
+- `last_updated` column is already present. `needs_review` is not yet implemented.
 - `status_history` table: Ensure pipeline logs initial "applied" status on save (not currently done; MUST ADD).
 - New `notes` table: Fully optional; doesn't affect existing pipeline.
 
@@ -494,7 +496,7 @@ def list_applications(status: Optional[str] = None, company: Optional[str] = Non
 | **Backend** | FastAPI, Python | Existing; async-ready; JSON-native. |
 | **Database** | SQLite | Existing; sufficient for MVP; no setup overhead. |
 | **API** | REST + JSON | Simple, stateless, cacheable. |
-| **Deployment** | Local (localhost:3000, localhost:8000) | MVP: single-machine development. |
+| **Deployment** | Local (localhost:8000; dashboard at /dashboard) | MVP: single-machine development. FastAPI serves both API and built dashboard. |
 
 ---
 
@@ -551,8 +553,9 @@ python -m src.main  # Runs on localhost:8000
 npm run build:extension
 # Manually load dist/ as unpacked extension in Chrome
 
-# Dashboard
-npm run dev:dashboard  # Runs on localhost:3000
+# Dashboard (dev server)
+npm run dev:dashboard  # Vite dev server on localhost:3000 (development only)
+# Production: npm run build:dashboard then visit http://localhost:8000/dashboard
 ```
 
 **Post-MVP (Cloud)**:
