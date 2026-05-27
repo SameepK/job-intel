@@ -13,14 +13,16 @@ from src.scraper import scrape_page
 load_dotenv()
 
 
-def call_claude(system: str, user: str, max_tokens: int = 2000) -> str:
-    prompt = f"{system}\n\n{user}"
+def call_claude(system_prompt: str, user_prompt: str) -> str:
+    prompt = f"{system_prompt}\n\n{user_prompt}"
+    env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
     result = subprocess.run(
-        ["claude"],
+        ["claude", "--print"],
         input=prompt,
         capture_output=True,
         text=True,
-        timeout=60
+        timeout=60,
+        env=env
     )
     if result.returncode != 0:
         print(f"[call_claude] stderr: {result.stderr}")
@@ -51,7 +53,7 @@ PAGE TEXT:
 
 Return ONLY valid JSON. No markdown. No explanation.
 """
-    raw = call_claude(system=agent_system, user=user_prompt)
+    raw = call_claude(system_prompt=agent_system, user_prompt=user_prompt)
     data = parse_json_response(raw)
 
     # Fallbacks
@@ -89,7 +91,7 @@ CANDIDATE CV:
 
 Return ONLY valid JSON. No markdown. No explanation.
 """
-    raw = call_claude(system=agent_system, user=user_prompt, max_tokens=2000)
+    raw = call_claude(system_prompt=agent_system, user_prompt=user_prompt)
     data = parse_json_response(raw)
     data["application_id"] = application_id
     data.setdefault("fit_score", 0)
@@ -150,7 +152,7 @@ TRACKER OUTPUT:
 
 Return ONLY valid JSON. No markdown. No explanation.
 """
-    raw = call_claude(system=agent_system, user=user_prompt)
+    raw = call_claude(system_prompt=agent_system, user_prompt=user_prompt)
     data = parse_json_response(raw) or {}
     data.setdefault("approved", True)
     data.setdefault("blocks", [])
@@ -207,9 +209,8 @@ Write a prep brief with these sections:
 Be specific and honest. Do not invent experience.
 """
     return call_claude(
-        system="You are an expert interview coach. Write clear, honest, specific prep briefs.",
-        user=prompt,
-        max_tokens=3000
+        system_prompt="You are an expert interview coach. Write clear, honest, specific prep briefs.",
+        user_prompt=prompt
     )
 
 
